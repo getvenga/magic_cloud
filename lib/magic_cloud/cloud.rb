@@ -36,7 +36,7 @@ module MagicCloud
           )
         }
 
-        Timeout::timeout(TIMEOUT_SECONDS) do
+        Timeout::timeout(timeout_secs) do
 
           spriter = Spriter.new
           spriter.make_sprites!(shapes)
