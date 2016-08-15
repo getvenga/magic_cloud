@@ -23,30 +23,35 @@ module MagicCloud
 
     DEFAULT_FAMILY = 'Impact'
 
-    def draw(width, height)
-      # FIXME: do it in init, for specs would be happy
-      shapes = @words.each_with_index.map{|(word, size), i|
-        Word.new(
-          word,
-          font_family: @options[:font_family] || DEFAULT_FAMILY,
-          font_size: scaler.call(word, size, i),
-          color: palette.call(word, i),
-          rotate: rotator.call(word, i)
-        )
-      }
+    def draw(width, height, timeout_secs)
+      begin
+        # FIXME: do it in init, for specs would be happy
+        shapes = @words.each_with_index.map{|(word, size), i|
+          Word.new(
+            word,
+            font_family: @options[:font_family] || DEFAULT_FAMILY,
+            font_size: scaler.call(word, size, i),
+            color: palette.call(word, i),
+            rotate: rotator.call(word, i)
+          )
+        }
 
-      Debug.reset!
+        Timeout::timeout(TIMEOUT_SECONDS) do
 
-      spriter = Spriter.new
-      spriter.make_sprites!(shapes)
+          spriter = Spriter.new
+          spriter.make_sprites!(shapes)
 
-      layouter = Layouter.new(width, height)
-      visible = layouter.layout!(shapes)
+          layouter = Layouter.new(width, height)
+          visible = layouter.layout!(shapes)
 
-      canvas = Canvas.new(width, height, 'white')
-      visible.each{|sh| sh.draw(canvas)}
+          canvas = Canvas.new(width, height, 'white')
+          visible.each{|sh| sh.draw(canvas)}
 
-      canvas.render
+          canvas.render
+        end
+      rescue Timeout::Error
+        return nil
+      end
     end
 
     private
